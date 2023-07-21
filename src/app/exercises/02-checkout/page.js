@@ -8,26 +8,24 @@ import CheckoutFlow from './CheckoutFlow';
 import './styles.css';
 
 function CheckoutExercise() {
-  const [items, dispatch] = React.useReducer(
-    reducer,
-    null,
-    () => {
-      const savedItems =
-        window.localStorage.getItem('cart-items');
-
-      if (savedItems === null) {
-        return [];
-      }
-
-      return JSON.parse(savedItems);
-    }
-  );
+  const [items, dispatch] = React.useReducer(reducer, []);
+  const [status, setStatus] = React.useState('loading');
 
   React.useEffect(() => {
-    window.localStorage.setItem(
-      'cart-items',
-      JSON.stringify(items)
-    );
+    const savedItems = window.localStorage.getItem('cart-items');
+
+    if (savedItems !== null) {
+      dispatch({
+        type: 'load-initial-items',
+        items: JSON.parse(savedItems),
+      });
+    }
+
+    setStatus('idle');
+  }, []);
+
+  React.useEffect(() => {
+    window.localStorage.setItem('cart-items', JSON.stringify(items));
   }, [items]);
 
   return (
@@ -35,7 +33,7 @@ function CheckoutExercise() {
       <h1>Neighborhood Shop</h1>
 
       <main>
-        <div className="items">
+        <div className='items'>
           {DATA.map((item) => (
             <StoreItem
               key={item.id}
@@ -52,6 +50,7 @@ function CheckoutExercise() {
 
         <CheckoutFlow
           items={items}
+          status={status}
           taxRate={0.15}
           handleDeleteItem={(item) =>
             dispatch({
